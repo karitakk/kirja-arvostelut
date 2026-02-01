@@ -1,22 +1,23 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="fi">
 <head>
+  <meta charset="UTF-8">
   <title>kirja-arvostelut</title>
 </head>
-
 <body>
   {% if session.username %}
-  <p>
-    Olet kirjautunut nimellä {{ session.username }}
-  </p>
+    <p>Olet kirjautunut nimellä {{ session.username }}</p>
   {% endif %}
 
   <p>
-    <a href="/login">Kirjaudu sisään</a>
-    <a href="/register">Rekisteröidy</a>
+    <a href="/login">Kirjaudu sisään</a> |
+    <a href="/register">Rekisteröidy</a> |
     <a href="/logout">Kirjaudu ulos</a>   
   </p> 
+
+  <p>
+    <a href="/new_item">Lisää uusi kirja</a>   
+  </p>    
 </body>
 
 </html>

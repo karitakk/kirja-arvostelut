@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Uusi ariviointi</title>
+</head>
+
+<body>
+  <h1>Lisää uusi kirja-arviointi</h1>  
+  <form action="/create_item" method="post">
+    <p>
+      Otsikko: <br />
+      <input type="text" name="title" />
+    </p>
+    <p>
+      Kirjailija: <br />
+      <input type="text" name="author" />
+    </p>
+    <p>
+      Arviointi: <br />
+      <input type="text" name="review" />
+    </p>
+    
+    <input type="submit" value="Luo arviointi" />
+  </form>
+</body>
+
+</html>
