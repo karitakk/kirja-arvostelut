@@ -8,10 +8,43 @@
 * Käyttäjä pystyy valitsemaan arvosteluille yhden tai useamman luokittelun (esim. genre, kieli, vuosi)
 * Sovelluksen pääasiallinen tietokohde on kirja ja toissijainen tietokohde on kirjaan liittyvä kommentti ja arvostelu.
 
+*  Kloonaa repository GitHubista:
+
+git clone https://github.com/karitakk/kirja-arvostelut.git
+cd kirja-arvostelut
+
+Luo virtuaaliympäristö ja aktivoi se:
+python3 -m venv venv
+source venv/bin/activate
+
+Asenna Flask:
+pip install flask
+
+Luo tietokanta ja taulut:
+sqlite3 database.db "CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL
+);"
+
+sqlite3 database.db "CREATE TABLE items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    author TEXT,
+    review TEXT,
+    user_id INTEGER,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);"
+
+Käynnistä sovellus:
+export FLASK_APP=app.py
+export FLASK_ENV=development
+flask run
+
 Avaa selain ja mene osoitteeseen http://127.0.0.1:5000
 
-Rekisteröidy uudella tunnuksella
+- Rekisteröidy uudella tunnuksella
 
-Kirjaudu sisään
+- Kirjaudu sisään
 
-Lisää uusi kirja-arvostelu ja tarkista, että se näkyy etusivulla
+- Lisää uusi kirja-arvostelu
