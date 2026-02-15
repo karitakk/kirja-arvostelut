@@ -36,15 +36,4 @@ sqlite3 database.db "CREATE TABLE items (
     FOREIGN KEY(user_id) REFERENCES users(id)
 );"
 
-Käynnistä sovellus:
-export FLASK_APP=app.py
-export FLASK_ENV=development
-flask run
 
-Avaa selain ja mene osoitteeseen http://127.0.0.1:5000
-
-- Rekisteröidy uudella tunnuksella
-
-- Kirjaudu sisään
-
-- Lisää uusi kirja-arvostelu
