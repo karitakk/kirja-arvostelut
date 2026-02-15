@@ -2,29 +2,13 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8">
-  <title>Kirja-arvostelut</title>
+  <title>Käyttäjän sivu - {{ user.username }}</title>
 </head>
 <body>
-  {% if session.username %}
-    <p>Olet kirjautunut nimellä {{ session.username }}</p>
-  {% else %}
-    <p>Et ole kirjautunut sisään</p>
-  {% endif %}
-
-  <p>
-    {% if not session.username %}
-      <a href="/login">Kirjaudu sisään</a> |
-      <a href="/register">Rekisteröidy</a>
-    {% else %}
-      <a href="/logout">Kirjaudu ulos</a> |
-      <a href="/new_item">Lisää uusi kirja</a>
-    {% endif %}
-  </p>
-
-  <hr>
+  <h1>Käyttäjä: {{ user.username }}</h1>
+  <p>Lisättyjä arvosteluja: {{ item_count }}</p>
 
   <h2>Kirja-arvostelut</h2>
-
   {% if items %}
     {% for item in items %}
       <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
@@ -41,14 +25,9 @@
       </div>
     {% endfor %}
   {% else %}
-    <p>Ei vielä arvosteluja.</p>
+    <p>Käyttäjällä ei vielä arvosteluja.</p>joo
   {% endif %}
 
-  <hr>
-
-  <form action="/search" method="get">
-    <input type="text" name="query" placeholder="Hae kirjaa tai kirjailijaa">
-    <button type="submit">Hae</button>
-  </form>
+  <p><a href="/">Takaisin etusivulle</a></p>
 </body>
 </html>

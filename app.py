@@ -1,76 +1,168 @@
-import sqlite3
-from flask import Flask
-from flask import redirect, render_template, request, session
-from werkzeug.security import check_password_hash, generate_password_hash
+from flask import Flask, render_template, request, redirect, session, flash, abort
+import secrets
 import config
 import db
+import users
+import items
 
 app = Flask(__name__)
-
+app.secret_key = config.secret_key
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    all_items = items.get_items()
+    return render_template("index.html", items=all_items)
 
-@app.route("/new_item")
-def new_item():
-    return render_template("new_item.html")
-
-@app.route("/create_item", methods=["POST"])
-def create_item():
-    title = request.form["title"]
-    author = request.form["author"]
-    review = request.form["review"]
-    user_id = db.get_user_id(session["username"])
-    sql = "INSERT INTO items (title, author, review, user_id) VALUES (?, ?, ?, ?)"
-    db.execute(sql, [title, author, review, user_id])
-
-@app.route("/register")
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    return render_template("register.html")
+    if request.method == "GET":
+        return render_template("register.html")
 
-@app.route("/create", methods=["POST"])
-def create():
     username = request.form["username"]
     password1 = request.form["password1"]
     password2 = request.form["password2"]
+
     if password1 != password2:
-        return "VIRHE: salasanat eivät ole samat"
-    password_hash = generate_password_hash(password1)
+        flash("VIRHE: salasanat eivät ole samat")
+        return redirect("/register")
 
     try:
-        sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
-        db.execute(sql, [username, password_hash])
-    except sqlite3.IntegrityError:
-        return "VIRHE: tunnus on jo varattu"
+        users.create_user(username, password1)
+    except:
+        flash("VIRHE: tunnus on jo varattu")
+        return redirect("/register")
 
-    return "Tunnus luotu"
+    return redirect("/login")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-            
-        sql = "SELECT id, password_hash FROM users WHERE username = ?"
-        result = db.query(sql, [username])[0]
-        user_id = result["id"]
-        if not result:
-            return "VIRHE: väärä tunnus tai salasana"
-        user_id, password_hash = result[0]
+    username = request.form["username"]
+    password = request.form["password"]
 
-        if check_password_hash(password_hash, password):
-            session["username"] = username
-            session["user_id"] = user_id
-            return redirect("/")
-        else:
-            return "VIRHE: väärä tunnus tai salasana"
+    user_id = users.check_login(username, password)
+    if user_id:
+        session["user_id"] = user_id
+        session["username"] = username
+        session["csrf_token"] = secrets.token_hex(16)
+        return redirect("/")
+    else:
+        flash("VIRHE: väärä tunnus tai salasana")
+        return redirect("/login")
 
 @app.route("/logout")
 def logout():
-    del session["username"]
-    del session["user_id"]
+    session.clear()
+    return redirect("/")
+
+
+@app.route("/new_item", methods=["GET", "POST"])
+def new_item():
+    if "user_id" not in session:
+        flash("Kirjaudu sisään lisätäksesi kirjan")
+        return redirect("/login")
+
+    if request.method == "GET":
+       
+        categories = items.get_categories()
+        return render_template("new_item.html", categories=categories, selected_categories=[])
+
+    
+    if request.form["csrf_token"] != session.get("csrf_token"):
+        abort(403)
+
+    title = request.form["title"]
+    author = request.form["author"]
+    review = request.form["review"]
+    user_id = session["user_id"]
+    selected_categories = request.form.getlist("categories") 
+
+    
+    items.add_item(title, author, review, user_id, selected_categories)
+    flash("Kirja lisätty onnistuneesti!")
+    return redirect("/")
+
+
+@app.route("/edit_item/<int:item_id>", methods=["GET", "POST"])
+def edit_item(item_id):
+    item = items.get_item(item_id)
+    if not item:
+        flash("Arviointia ei löytynyt")
+        return redirect("/")
+
+    if session.get("user_id") != item["user_id"]:
+        flash("Et voi muokata tätä arviota")
+        return redirect("/")
+
+    if request.method == "GET":
+     
+        categories = items.get_categories()
+        selected_categories = items.get_item_categories(item_id)
+        return render_template("edit_item.html",
+                               item=item,
+                               categories=categories,
+                               selected_categories=selected_categories)
+
+   
+    if request.form["csrf_token"] != session.get("csrf_token"):
+        abort(403)
+
+    title = request.form["title"]
+    author = request.form["author"]
+    review = request.form["review"]
+    selected_categories = request.form.getlist("categories")
+
+    items.update_item(item_id, title, author, review)
+    items.update_item_categories(item_id, selected_categories)
+    flash("Arviointi päivitetty!")
+    return redirect("/")
+
+
+@app.route("/remove_item/<int:item_id>", methods=["POST"])
+def remove_item(item_id):
+    if request.form["csrf_token"] != session.get("csrf_token"):
+        abort(403)
+
+    item = items.get_item(item_id)
+    if not item or session.get("user_id") != item["user_id"]:
+        flash("Et voi poistaa tätä arviota")
+        return redirect("/")
+
+    items.delete_item(item_id)
+    flash("Arviointi poistettu!")
+    return redirect("/")
+
+
+@app.route("/search")
+def search():
+    query = request.args.get("query", "")
+    results = items.search_items(query)
+    return render_template("search.html", query=query, results=results)
+
+
+@app.route("/user/<int:user_id>")
+def user_page(user_id):
+    user = users.get_user(user_id)
+    user_items = items.get_items_by_user(user_id)
+    item_count = items.count_items_by_user(user_id)
+
+    return render_template("user.html",
+                           user=user,
+                           items=user_items,
+                           item_count=item_count)
+
+
+@app.route("/comment_item/<int:item_id>", methods=["POST"])
+def comment_item(item_id):
+    if "user_id" not in session:
+        flash("Kirjaudu sisään kommentoidaksesi")
+        return redirect("/login")
+    if request.form["csrf_token"] != session.get("csrf_token"):
+        abort(403)
+
+    text = request.form["comment"]
+    items.add_comment(item_id, session["user_id"], text)
+    flash("Kommentti lisätty!")
     return redirect("/")

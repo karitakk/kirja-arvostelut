@@ -1,0 +1,28 @@
+<form action="/edit_item/{{ item.id }}" method="post">
+
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+
+    <p>
+      Otsikko: <br />
+      <input type="text" name="title" value="{{ item.title }}">
+    </p>
+
+    <p>
+      Kirjailija: <br />
+      <input type="text" name="author" value="{{ item.author }}">
+    </p>
+
+    <p>
+      Arviointi: <br />
+      <input type="text" name="review" value="{{ item.review }}">
+    </p>
+
+    <p>Valitse luokat:</p>
+    {% for category in categories %}
+      <input type="checkbox" name="categories" value="{{ category.id }}"
+        {% if category.id in selected_categories %}checked{% endif %}>
+      {{ category.name }}<br>
+    {% endfor %}
+
+    <input type="submit" value="Tallenna">
+</form>

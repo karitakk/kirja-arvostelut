@@ -1,28 +1,37 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-  <title>Uusi ariviointi</title>
+  <title>Uusi arviointi</title>
 </head>
-
 <body>
   <h1>Lisää uusi kirja-arviointi</h1>  
-  <form action="/create_item" method="post">
+
+  <form action="/new_item" method="post">
+
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+
     <p>
       Otsikko: <br />
       <input type="text" name="title" />
     </p>
+
     <p>
       Kirjailija: <br />
       <input type="text" name="author" />
     </p>
+
     <p>
       Arviointi: <br />
       <input type="text" name="review" />
     </p>
-    
+
+    <p>Valitse luokat:</p>
+    {% for category in categories %}
+      <input type="checkbox" name="categories" value="{{ category.id }}">
+      {{ category.name }}<br>
+    {% endfor %}
+
     <input type="submit" value="Luo arviointi" />
   </form>
 </body>
-
 </html>
