@@ -8,3 +8,4 @@
 * Käyttäjä pystyy valitsemaan arvosteluille yhden tai useamman luokittelun (esim. genre, kieli, vuosi)
 * Sovelluksen pääasiallinen tietokohde on kirja ja toissijainen tietokohde on kirjaan liittyvä kommentti ja arvostelu.
 
+Sovelluksen käynnistys: *Lataa projekti tietokoneelle eli kloonaa se gitistä *Avaa projekti esim. VS Codessa *Aktivoi virtuaaliympäristö *Asenna paketit: pip install flask *Sovelluksen käynnistys: python app.py 
