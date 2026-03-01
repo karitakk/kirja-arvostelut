@@ -12,17 +12,17 @@
 
     <p>
       Otsikko: <br />
-      <input type="text" name="title" />
+      <input type="text" name="title" required/>
     </p>
 
     <p>
       Kirjailija: <br />
-      <input type="text" name="author" />
+      <input type="text" name="author" required/>
     </p>
 
     <p>
-      Arviointi: <br />
-      <input type="text" name="review" />
+      Arviointi (1–5): <br />
+      <input type="number" name="review" min="1" max="5" step="1" required>
     </p>
 
     <p>Valitse luokat:</p>

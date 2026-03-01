@@ -6,11 +6,11 @@ CREATE TABLE users (
 
 CREATE TABLE items (
     id INTEGER PRIMARY KEY,
-    title TEXT,
-    author TEXT,
-    review TEXT
-    user_id INTEGER REFERENCES users
-
+    title TEXT NOT NULL,
+    author TEXT NOT NULL,
+    review TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 
@@ -38,3 +38,6 @@ CREATE TABLE comments (
     FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE CASCADE,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_items_title ON items(title);
+CREATE INDEX idx_items_author ON items(author);

@@ -16,7 +16,11 @@ def index():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
-        return render_template("register.html")
+        session["csrf_token"] = secrets.token_hex(16)
+        return render_template("register.html", csrf_token=session["csrf_token"])
+
+    if request.form.get("csrf_token") != session.get("csrf_token"):
+        abort(403)
 
     username = request.form["username"]
     password1 = request.form["password1"]
@@ -32,12 +36,18 @@ def register():
         flash("VIRHE: tunnus on jo varattu")
         return redirect("/register")
 
+    flash("Käyttäjä luotu! Kirjaudu sisään.")
     return redirect("/login")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        return render_template("login.html")
+        session["csrf_token"] = secrets.token_hex(16)
+        return render_template("login.html", csrf_token=session["csrf_token"])
+
+    if request.form.get("csrf_token") != session.get("csrf_token"):
+        abort(403)
 
     username = request.form["username"]
     password = request.form["password"]
@@ -51,6 +61,7 @@ def login():
     else:
         flash("VIRHE: väärä tunnus tai salasana")
         return redirect("/login")
+
 
 @app.route("/logout")
 def logout():
@@ -80,7 +91,12 @@ def new_item():
     selected_categories = request.form.getlist("categories") 
 
     
-    items.add_item(title, author, review, user_id, selected_categories)
+    items.add_item(title, author, review, user_id)
+
+    item_id = db.last_insert_id()
+
+    items.add_item_categories(item_id, selected_categories)
+
     flash("Kirja lisätty onnistuneesti!")
     return redirect("/")
 
@@ -97,14 +113,12 @@ def edit_item(item_id):
         return redirect("/")
 
     if request.method == "GET":
-     
         categories = items.get_categories()
-        selected_categories = items.get_item_categories(item_id)
+        selected_categories = []
         return render_template("edit_item.html",
                                item=item,
                                categories=categories,
                                selected_categories=selected_categories)
-
    
     if request.form["csrf_token"] != session.get("csrf_token"):
         abort(403)

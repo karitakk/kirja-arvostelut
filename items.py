@@ -52,3 +52,16 @@ def get_comments(item_id):
              FROM comments JOIN users ON comments.user_id = users.id
              WHERE item_id = ? ORDER BY comments.created_at"""
     return db.query(sql, [item_id])
+
+def count_items_by_user(user_id):
+    sql = "SELECT COUNT(*) FROM items WHERE user_id = ?"
+    result = db.query(sql, [user_id])
+    return result[0][0]
+
+def update_item_categories(item_id, category_ids):
+    db.execute("DELETE FROM item_categories WHERE item_id = ?", [item_id])
+    for cat_id in category_ids:
+        db.execute(
+            "INSERT INTO item_categories (item_id, category_id) VALUES (?, ?)",
+            [item_id, cat_id]
+        )
